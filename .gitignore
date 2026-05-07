@@ -1,0 +1,27 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# Editor / OS cruft
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.bak
+*.tmp
+
+# Coverage
+coverage/
+.nyc_output/

@@ -1,0 +1,41 @@
+{
+  "name": "@keysat/licensing-client",
+  "version": "0.1.0",
+  "description": "Client library for Keysat. Verifies signed license keys offline and wraps the HTTP API for purchase and revocation checks.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "bitcoin",
+    "licensing",
+    "btcpay",
+    "start9",
+    "ed25519"
+  ],
+  "repository": "https://github.com/keysat-xyz/keysat",
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@noble/ed25519": "^2.0.0",
+    "@noble/hashes": "^1.3.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.0.0"
+  }
+}
