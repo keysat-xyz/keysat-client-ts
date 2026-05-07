@@ -17,6 +17,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
     "test": "vitest run",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
@@ -26,7 +27,7 @@
     "start9",
     "ed25519"
   ],
-  "repository": "https://github.com/keysat-xyz/keysat",
+  "repository": "https://github.com/keysat-xyz/keysat-client-ts",
   "license": "MIT",
   "engines": { "node": ">=18" },
   "dependencies": {
