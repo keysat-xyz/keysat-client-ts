@@ -14,6 +14,8 @@ export {
   type PurchaseSession,
   type PollResponse,
   type StartPurchaseOptions,
+  type PublicPolicy,
+  type PublicPoliciesResponse,
   type RedeemFreeOptions,
   type RedeemFreeResponse,
 } from './online.js'

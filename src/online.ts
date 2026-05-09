@@ -90,6 +90,67 @@ export interface StartPurchaseOptions {
   code?: string
   /** Optional buyer note recorded on the invoice (admin-visible). */
   buyerNote?: string
+  /**
+   * Optional tier slug (the policy the buyer chose). When set, the
+   * licensing service prices the invoice at the policy's
+   * `price_sats_override` and remembers the chosen policy on the
+   * invoice so the issued license carries that policy's
+   * entitlements / duration / max_machines / trial flag.
+   *
+   * When omitted, the service falls back to the product's default
+   * policy (the policy slugged "default", or the first active one).
+   *
+   * To list available tiers for a product without auth, see
+   * {@link Client.listPublicPolicies}.
+   */
+  policySlug?: string
+}
+
+/**
+ * One tier on the buyer-facing tier picker. Returned by
+ * {@link Client.listPublicPolicies}. The shape mirrors what the
+ * licensing service's `/buy/<slug>` page reads server-side, so an
+ * in-app tier picker can render identical text and pricing without
+ * the buyer ever leaving the app.
+ */
+export interface PublicPolicy {
+  slug: string
+  name: string
+  /** Free-form per-tier blurb (operator-set in admin UI). May be empty. */
+  description: string
+  /**
+   * Effective price in the smallest unit of the product's listed
+   * currency: sats for SAT-priced products, cents for USD/EUR-priced
+   * products. The product-level currency is on the parent
+   * {@link PublicPoliciesResponse.product.basePriceSats} (sats only) and
+   * via the daemon's `/v1/products/<slug>` endpoint for the full
+   * currency-typed view.
+   */
+  priceSats: number
+  /** 0 = perpetual; otherwise license lifetime in seconds. */
+  durationSeconds: number
+  /** Seat cap. 0 = unlimited, 1 = single-seat, n = n-seat. */
+  maxMachines: number
+  isTrial: boolean
+  entitlements: string[]
+  /** True if the operator marked this tier as "Most popular". */
+  highlighted: boolean
+  /** True if the policy is a recurring subscription. */
+  isRecurring: boolean
+  /** Renewal cadence in days (0 for non-recurring). */
+  renewalPeriodDays: number
+  /** First-cycle free-trial length (0 for none). */
+  trialDays: number
+}
+
+export interface PublicPoliciesResponse {
+  product: {
+    slug: string
+    name: string
+    description: string
+    basePriceSats: number
+  }
+  policies: PublicPolicy[]
 }
 
 export interface RedeemFreeOptions {
@@ -201,6 +262,7 @@ export class Client {
       buyer_note: opts.buyerNote,
       redirect_url: opts.redirectUrl,
       code: opts.code,
+      policy_slug: opts.policySlug,
     })
     return {
       invoiceId: raw.invoice_id as string,
@@ -208,6 +270,47 @@ export class Client {
       checkoutUrl: raw.checkout_url as string,
       amountSats: raw.amount_sats as number,
       pollUrl: raw.poll_url as string,
+    }
+  }
+
+  /**
+   * List public, buyer-visible policies (tiers) for a product. No
+   * auth — same data the licensing service's `/buy/<slug>` page
+   * uses server-side. Use this to render an in-app tier picker
+   * that stays in sync with the operator's admin-side tier setup.
+   *
+   * Returns each policy's slug, display name, price (in the
+   * product's listed currency's smallest unit — sats or cents),
+   * entitlements, recurring/trial flags. Internal fields (id,
+   * tip recipients, raw metadata) are deliberately omitted.
+   */
+  async listPublicPolicies(productSlug: string): Promise<PublicPoliciesResponse> {
+    const raw = await this.get<Record<string, unknown>>(
+      `/v1/products/${encodeURIComponent(productSlug)}/policies`,
+    )
+    const product = raw.product as Record<string, unknown>
+    const policies = (raw.policies as Record<string, unknown>[]) ?? []
+    return {
+      product: {
+        slug: product.slug as string,
+        name: product.name as string,
+        description: (product.description as string) ?? '',
+        basePriceSats: product.base_price_sats as number,
+      },
+      policies: policies.map((p) => ({
+        slug: p.slug as string,
+        name: p.name as string,
+        description: (p.description as string) ?? '',
+        priceSats: p.price_sats as number,
+        durationSeconds: (p.duration_seconds as number) ?? 0,
+        maxMachines: (p.max_machines as number) ?? 1,
+        isTrial: !!p.is_trial,
+        entitlements: (p.entitlements as string[]) ?? [],
+        highlighted: !!p.highlighted,
+        isRecurring: !!p.is_recurring,
+        renewalPeriodDays: (p.renewal_period_days as number) ?? 0,
+        trialDays: (p.trial_days as number) ?? 0,
+      })),
     }
   }
 
