@@ -16,6 +16,7 @@ export {
   type StartPurchaseOptions,
   type PublicPolicy,
   type PublicPoliciesResponse,
+  type EntitlementDef,
   type RedeemFreeOptions,
   type RedeemFreeResponse,
 } from './online.js'

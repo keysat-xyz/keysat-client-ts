@@ -143,12 +143,35 @@ export interface PublicPolicy {
   trialDays: number
 }
 
+/**
+ * One entry in a product's entitlements catalog. Defined by the
+ * operator in admin (Keysat migration 0014). Use
+ * {@link EntitlementDef.name} as the human-readable label when
+ * rendering an in-app tier picker — e.g. "AI summaries" instead
+ * of the raw `ai_summaries` slug. {@link EntitlementDef.description}
+ * is a one-sentence tooltip; may be empty.
+ */
+export interface EntitlementDef {
+  slug: string
+  name: string
+  description: string
+}
+
 export interface PublicPoliciesResponse {
   product: {
     slug: string
     name: string
     description: string
     basePriceSats: number
+    /**
+     * Closed list of entitlements this product offers, with display
+     * names + descriptions for buyer-facing rendering. Empty array
+     * when the operator hasn't defined a catalog (legacy "free-text"
+     * mode — render the raw slugs from {@link PublicPolicy.entitlements}
+     * directly, or replace underscores with spaces for a quick
+     * fallback).
+     */
+    entitlementsCatalog: EntitlementDef[]
   }
   policies: PublicPolicy[]
 }
@@ -296,6 +319,13 @@ export class Client {
         name: product.name as string,
         description: (product.description as string) ?? '',
         basePriceSats: product.base_price_sats as number,
+        entitlementsCatalog: (
+          (product.entitlements_catalog as Array<Record<string, unknown>>) ?? []
+        ).map((c) => ({
+          slug: c.slug as string,
+          name: (c.name as string) ?? (c.slug as string),
+          description: (c.description as string) ?? '',
+        })),
       },
       policies: policies.map((p) => ({
         slug: p.slug as string,
