@@ -1,6 +1,6 @@
 # @keysat/licensing-client
 
-TypeScript / JavaScript client for [`Keysat`](https://github.com/keysat-xyz/keysat) — a self-hosted Bitcoin-paid software licensing server that runs on Start9.
+TypeScript / JavaScript client for [`Keysat`](https://github.com/keysat-xyz/keysat) — a Bitcoin-native self-hosted software licensing service that runs on Start9.
 
 Works in modern browsers and Node 18+. No native dependencies; signature verification is done in pure JS via [`@noble/ed25519`](https://github.com/paulmillr/noble-ed25519).
 
