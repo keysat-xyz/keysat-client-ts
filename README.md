@@ -34,7 +34,9 @@ That's the whole integration. Embed your public key as a string at build time (e
 import { Client } from '@keysat/licensing-client'
 
 const client = new Client('https://license.example.com')
-const result = await client.validate(keyFromUser, 'my-product', machineFingerprint)
+// Current form: pass an options object. The positional form
+// `validate(key, productSlug, fingerprint)` still works for backwards compatibility.
+const result = await client.validate(keyFromUser, { productSlug: 'my-product', fingerprint: machineFingerprint })
 if (!result.ok) {
   console.error('rejected:', result.reason)
   process.exit(1)
